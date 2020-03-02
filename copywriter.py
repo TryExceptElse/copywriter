@@ -2,7 +2,6 @@
 Utility for adding and updating copyright notices on files.
 """
 import argparse
-import datetime as dt
 import fnmatch
 import glob
 import os
