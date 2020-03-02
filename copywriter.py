@@ -147,24 +147,15 @@ class Copywriter:
         """
 
 
-class FileType:
+class FileType(ty.NamedTuple):
     """
     Class holding file type info.
     """
-    def __init__(
-            self,
-            name: str,
-            patterns: ty.Iterable[str],
-            comment: str = '',
-            block_pat: str = '',
-            block_prefix: str = '',
-    ) -> None:
-        """ Initialize a new file type """
-        self.name = name
-        self.patterns = patterns
-        self.comment = comment
-        self.block_pat = block_pat
-        self.block_prefix = block_prefix
+    name: str
+    patterns: ty.Iterable[str]
+    comment: str = ''
+    block_pat: str = ''
+    block_prefix: str = ''
 
 
 class TxtFile:
