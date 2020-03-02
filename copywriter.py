@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import itertools
 import re
-import statistics
+import subprocess as sub
 import typing as ty
 
 
@@ -26,7 +26,6 @@ class Copywriter:
             *root: PathLike,
             copyright_re: str = COPYRIGHT_REGEX,
             update_re: str = '',
-            owner: str = ''
     ) -> None:
         """
         Create new copywriter instance.
@@ -45,7 +44,6 @@ class Copywriter:
         self.files = self._find_files(*self.roots)
         self._outdated: ty.Optional[ty.Set[Path]] = None
         self._missing: ty.Optional[ty.Set[Path]] = None
-        self.owner = owner or ''
 
     @staticmethod
     def _find_files(*root: PathLike) -> ty.Set[Path]:
@@ -122,14 +120,10 @@ class Copywriter:
         :return: List[Path]
         """
         if self._outdated is None:
-            outdated: ty.Set[Path] = set()
-            for path in self.files:
-                try:
-                    if TxtFile(path, self.copyright_re).header_is_outdated:
-                        outdated.add(path)
-                except ValueError:
-                    pass
-            self._outdated = outdated
+            self._outdated = {
+                path for path in self.files if
+                TxtFile(path, self.copyright_re).header_is_outdated
+            }
         return self._outdated
 
     @property
@@ -191,7 +185,7 @@ class TxtFile:
         """
         updated_copyright = re.sub(
             pattern=YEAR_PATTERN,
-            repl=f'{self.year_range.start}-{dt.date.today().year}',
+            repl=f'{self.year_range.start}-{self.modification_year}',
             string=self.copyright_str,
             count=1
         )
@@ -251,7 +245,16 @@ class TxtFile:
         last modified.
         :return: int
         """
-        return dt.datetime.fromtimestamp(self.path.stat().st_mtime).year
+        date_str = sub.check_output(
+            args=(
+                'git', 'log', '-1', '--format="%ad"', '--date=format:"%Y"',
+                '--', f'{self.path.name}'
+            ),
+            cwd=self.path.parent,
+            encoding='utf-8',
+        ).strip('\'"\n')
+        year = int(date_str)
+        return year
 
     @property
     def header_is_outdated(self) -> bool:
@@ -260,12 +263,16 @@ class TxtFile:
         :return: True if outdated.
         :raises: ValueError if header was not understood.
         """
-        year_range = self.year_range
-        if year_range is None:
+        try:
+            year_range = self.year_range
+        except ValueError:
             # Copyright headers without a year are not
             # considered outdated.
             return False
         return self.modification_year >= year_range.stop
+
+    def __repr__(self) -> str:
+        return f'TxtFile[{self.path}]'
 
 
 def recognize(path: Path) -> FileType:
@@ -304,11 +311,6 @@ def main():
         help='Add copyright notice where missing.'
     )
     parser.add_argument(
-        '--owner',
-        help='Copyright owner name to be added to files when `--add-missing` '
-             'option is passed. Otherwise ignored.'
-    )
-    parser.add_argument(
         '--copyright-re', default=COPYRIGHT_REGEX,
         help='Copyright header str.'
     )
@@ -322,7 +324,6 @@ def main():
         *args.path,
         copyright_re=args.copyright_re,
         update_re=args.only_update,
-        owner=args.owner
     )
 
     if args.show or not (args.update or args.add_missing):

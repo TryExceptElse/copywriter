@@ -118,15 +118,6 @@ def test_single_year_update():
             assert 'Copyright 1085-1086 William' in f.read()
 
 
-def test_owner_detection():
-    """ Tests that the owner of a library can be detected. """
-    roots = [Path(SAMPLE, name) for name in (
-            'cmake', 'include', 'scripts', 'src',
-            'build.sh', 'CMakeLists.txt', 'readme.md'
-    )]
-    assert 'William' == copywriter.Copywriter(*roots).owner
-
-
 def test_c_header_addition():
     """ Tests addition of a copyright header to a C/C++ source file. """
     with tempfile.TemporaryDirectory() as tmp_dir:
