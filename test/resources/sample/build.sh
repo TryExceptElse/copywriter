@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-# Copyright 1085-1086 William
+# Copyright 2019-2020 Bob

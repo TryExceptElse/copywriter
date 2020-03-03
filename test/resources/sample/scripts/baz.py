@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright 1085 William
+Copyright 2019 Bob
 
 Documentation!
 """
