@@ -1,3 +1,4 @@
+#!/usr/bin/env/python3
 """
 Utility for adding and updating copyright notices on files.
 """
