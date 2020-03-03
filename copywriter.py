@@ -168,6 +168,9 @@ class TxtFile:
         self.copyright_re = copyright_re
         self.type = recognize(self.path)
 
+        if not self.path.is_file():
+            raise ValueError(f'Expected a file path. Got a dir: {self.path}')
+
     def update(self) -> None:
         """
         Updates the copyright header in a file.
