@@ -138,13 +138,6 @@ class Copywriter:
             }
         return self._missing
 
-    @property
-    def auto_header(self) -> str:
-        """
-        Determines the auto-generated header to be added.
-        :return: owner str.
-        """
-
 
 class FileType(ty.NamedTuple):
     """
