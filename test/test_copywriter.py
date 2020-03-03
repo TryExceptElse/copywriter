@@ -115,7 +115,7 @@ def test_single_year_update():
 
 
 def test_format_detection():
-    fmt = copywriter.TxtFile(SAMPLE, 'scripts/baz.py').format
+    fmt = copywriter.TxtFile(Path(SAMPLE, 'scripts/baz.py')).format
     assert 'Copyright {years} Bob' == fmt
 
 
