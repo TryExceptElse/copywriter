@@ -3,5 +3,5 @@ from setuptools import setup
 
 setup(
     name='copywriter',
-    tests_require=['pytest', 'freezegun'],
+    tests_require=['pytest'],
 )
