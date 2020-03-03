@@ -6,8 +6,6 @@ import shutil
 import tempfile
 import textwrap
 
-from freezegun import freeze_time
-
 import copywriter
 
 
@@ -116,20 +114,35 @@ def test_single_year_update():
             assert 'Copyright 2019-2020 Bob' in f.read()
 
 
+def test_format_detection():
+    fmt = copywriter.TxtFile(SAMPLE, 'scripts/baz.py').format
+    assert 'Copyright {years} Bob' == fmt
+
+
+def test_auto_header():
+    roots = [Path(SAMPLE, name) for name in (
+        'cmake', 'include', 'scripts', 'src',
+        'build.sh', 'CMakeLists.txt', 'readme.md'
+    )]
+    auto_header = copywriter.Copywriter(*roots).auto_header
+    assert auto_header == 'Copyright {years} Bob'
+
+
 def test_c_header_addition():
     """ Tests addition of a copyright header to a C/C++ source file. """
     with tempfile.TemporaryDirectory() as tmp_dir:
-        foo = Path(tmp_dir, 'foo.h')
-        shutil.copy(
-            src=Path(SAMPLE, 'include', 'nested_dir', 'foo.h'), dst=foo
+        shutil.copytree(src=ROOT, dst=Path(tmp_dir, 'sample'))
+        foo = Path(
+            tmp_dir, 'sample/test/resources/sample/include/nested_dir/foo.h'
         )
+        shutil.copy(src=foo, dst=Path(tmp_dir, 'sample'))
         expected = textwrap.dedent("""
         /**
-         * 
+         * Copyright 2018-2019 Bob
          *
          * Unrelated header
          */
-        """)
+        """[1:])  # skip opening newline.
         copywriter.TxtFile(foo).add()
         with foo.open() as f:
-            assert ''
+            assert f.read() == expected
