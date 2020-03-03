@@ -2,6 +2,7 @@
 Utility for adding and updating copyright notices on files.
 """
 import argparse
+import collections
 import fnmatch
 import glob
 import os
@@ -144,6 +145,9 @@ class Copywriter:
         Determines the auto-generated header to be added.
         :return: owner str.
         """
+        formats = [TxtFile(path).format for path in self.files]
+        filtered = filter(lambda fmt: fmt is not None, formats)
+        return collections.Counter(filtered).most_common(n=1)[0][0]
 
 
 class FileType(ty.NamedTuple):
