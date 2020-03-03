@@ -261,6 +261,23 @@ class TxtFile:
             return False
         return self.modification_year >= year_range.stop
 
+    @property
+    def format(self) -> ty.Optional[str]:
+        """
+        Gets format of header (if found).
+
+        :return: header format str (Ex: 'Copyright 2019 Bob') or None
+        """
+        try:
+            return re.sub(
+                pattern=YEAR_PATTERN,
+                repl='{years}',
+                string=self.copyright_str,
+                count=1
+            )
+        except ValueError:
+            return None
+
     def __repr__(self) -> str:
         return f'TxtFile[{self.path}]'
 
