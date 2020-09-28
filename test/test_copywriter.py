@@ -128,21 +128,20 @@ def test_auto_header():
     assert auto_header == 'Copyright {years} Bob'
 
 
-def test_c_header_addition():
+def test_c_header_addition(tmp_path: Path):
     """ Tests addition of a copyright header to a C/C++ source file. """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        shutil.copytree(src=ROOT, dst=Path(tmp_dir, 'sample'))
-        foo = Path(
-            tmp_dir, 'sample/test/resources/sample/include/nested_dir/foo.h'
-        )
-        shutil.copy(src=foo, dst=Path(tmp_dir, 'sample'))
-        expected = textwrap.dedent("""
-        /**
-         * Copyright 2018-2019 Monty
-         *
-         * Unrelated header
-         */
-        """[1:])  # skip opening newline.
-        copywriter.TxtFile(foo).add('Copyright {year} Monty')
-        with foo.open() as f:
-            assert f.read() == expected
+    shutil.copytree(src=ROOT, dst=Path(tmp_path, 'sample'))
+    foo = Path(
+        tmp_path, 'sample/test/resources/sample/include/nested_dir/foo.h'
+    )
+    shutil.copy(src=foo, dst=Path(tmp_path, 'sample'))
+    expected = textwrap.dedent("""
+    /**
+     * Copyright 2018-2019 Monty
+     *
+     * Unrelated header
+     */
+    """[1:])  # skip opening newline.
+    copywriter.TxtFile(foo).add('Copyright {year} Monty')
+    with foo.open() as f:
+        assert f.read() == expected
