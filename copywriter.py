@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import itertools
 import re
+import string
 import subprocess as sub
 import typing as ty
 
@@ -158,16 +159,9 @@ class FileType(ty.NamedTuple):
     name: str
     patterns: ty.Iterable[str]
     comment: str = ''
-    block_pat: str = ''
+    block_start: str = ''
+    block_end: str = ''
     block_prefix: str = ''
-
-    @property
-    def block_opening(self) -> str:
-        return self.block_pat.split('.*')[0].replace('\\', '')
-
-    @property
-    def block_closing(self) -> str:
-        return self.block_pat.split('.*')[-1].replace('\\', '')
 
 
 class TxtFile:
@@ -213,8 +207,8 @@ class TxtFile:
         Adds a copyright header where one was previously missing.
         :return: None
         """
-        if self.type.block_pat:
-            block_start = self.type.block_opening
+        if self.type.block_start:
+            block_start = self.type.block_start
         else:
             block_start = self.type.comment
 
@@ -232,17 +226,23 @@ class TxtFile:
         with self.path.open('r+') as f:
             lines = f.readlines()
             opening_lines = lines[:5]
-            if self.type.block_pat:
+            if self.type.block_start:
                 # Check if there is an existing header to expand.
                 block_i = find_block_start(opening_lines)
                 if block_i != -1:
                     # Expand existing block
                     original = opening_lines[block_i]
-                    split_i = len(self.type.block_opening)
+                    split_i = original.find(block_start) + len(block_start)
+
+                    # Leave characters attached to the block start
+                    # in place.
+                    while original[split_i] not in string.whitespace:
+                        split_i += 1
+
                     new = (
-                            original[:split_i] +
+                            original[:split_i].rstrip() +
                             f'\n{self.type.block_prefix}{copyright_str}\n' +
-                            f'{self.type.block_prefix}\n' +
+                            f'{self.type.block_prefix}' +
                             original[split_i:]
                     )
                     lines[block_i] = new
@@ -253,9 +253,9 @@ class TxtFile:
                     else:
                         insert_i = 0
                     new_line = (
-                        f'{self.type.block_opening}\n' +
+                        f'{self.type.block_start}\n' +
                         f'{self.type.block_prefix}{copyright_str}\n' +
-                        f'{self.type.block_closing}\n'
+                        f'{self.type.block_end}\n'
                     )
                     lines[insert_i] = new_line
             else:
@@ -426,14 +426,16 @@ file_types = {f_type.name: f_type for f_type in (
         name='c-style',
         patterns=('*.c', '*.cc', '*.cpp', '*.cxx', '*.h', '*.hh', '*.hpp'),
         comment='//',
-        block_pat=r'/\*.*\*/',
+        block_start='/*',
+        block_end='*/',
         block_prefix=' * ',
     ),
     FileType(
         name='py-style',
         patterns=('*.py', '*.pyi', '*.pyx', '*.pxd', '*.pyd', '*.pxi'),
         comment='#',
-        block_pat=r'""".*"""',
+        block_start='"""',
+        block_end='"""',
         block_prefix='',
     ),
     FileType(

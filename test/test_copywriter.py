@@ -137,8 +137,8 @@ def test_c_header_addition(tmp_path: Path):
     shutil.copy(src=foo, dst=Path(tmp_path, 'sample'))
     expected = textwrap.dedent("""
     /**
-     * Copyright 2018-2019 Monty
-     *
+     * Copyright 2020 Monty
+     * 
      * Unrelated header
      */
     """[1:])  # skip opening newline.
