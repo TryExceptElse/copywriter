@@ -225,7 +225,7 @@ class TxtFile:
         copyright_str = fmt.format(year=self.modification_year)
         with self.path.open('r+') as f:
             lines = f.readlines()
-            opening_lines = lines[:5]
+            opening_lines = lines[:3]
             if self.type.block_start:
                 # Check if there is an existing header to expand.
                 block_i = find_block_start(opening_lines)
@@ -252,24 +252,24 @@ class TxtFile:
                         insert_i = 1
                     else:
                         insert_i = 0
-                    new_line = (
+                    new_text = (
                         f'{self.type.block_start}\n' +
                         f'{self.type.block_prefix}{copyright_str}\n' +
                         f'{self.type.block_end}\n'
                     )
-                    lines[insert_i] = new_line
+                    lines.insert(insert_i, new_text)
             else:
                 # Add copyright header in comment
                 if lines[0].startswith('#!'):
                     insert_i = 1
                 else:
                     insert_i = 0
-                new_line = (
+                new_text = (
                     f'{self.type.comment}\n' +
                     f'{self.type.comment} {copyright_str}\n' +
                     f'{self.type.comment}\n'
                 )
-                lines[insert_i] = new_line
+                lines.insert(insert_i, new_text)
 
             # Write modified lines to file.
             f.seek(0)
@@ -427,7 +427,7 @@ file_types = {f_type.name: f_type for f_type in (
         patterns=('*.c', '*.cc', '*.cpp', '*.cxx', '*.h', '*.hh', '*.hpp'),
         comment='//',
         block_start='/*',
-        block_end='*/',
+        block_end=' */',
         block_prefix=' * ',
     ),
     FileType(
