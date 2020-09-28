@@ -138,11 +138,11 @@ def test_c_header_addition():
         shutil.copy(src=foo, dst=Path(tmp_dir, 'sample'))
         expected = textwrap.dedent("""
         /**
-         * Copyright 2018-2019 Bob
+         * Copyright 2018-2019 Monty
          *
          * Unrelated header
          */
         """[1:])  # skip opening newline.
-        copywriter.TxtFile(foo).add()
+        copywriter.TxtFile(foo).add('Copyright {year} Monty')
         with foo.open() as f:
             assert f.read() == expected

@@ -161,6 +161,14 @@ class FileType(ty.NamedTuple):
     block_pat: str = ''
     block_prefix: str = ''
 
+    @property
+    def block_opening(self) -> str:
+        return self.block_pat.split('.*')[0].replace('\\', '')
+
+    @property
+    def block_closing(self) -> str:
+        return self.block_pat.split('.*')[-1].replace('\\', '')
+
 
 class TxtFile:
     """
@@ -175,6 +183,9 @@ class TxtFile:
 
         if not self.path.is_file():
             raise ValueError(f'Expected a file path. Got a dir: {self.path}')
+
+        if not self.type:
+            raise ValueError(f'Could not recognize file type: {self.path}')
 
     def update(self) -> None:
         """
@@ -197,11 +208,72 @@ class TxtFile:
             f.seek(0)
             f.write(new_content)
 
-    def add(self) -> None:
+    def add(self, fmt: str) -> None:
         """
         Adds a copyright header where one was previously missing.
         :return: None
         """
+        if self.type.block_pat:
+            block_start = self.type.block_opening
+        else:
+            block_start = self.type.comment
+
+        def find_block_start(lines_: ty.Sequence[str]) -> int:
+            """
+            Finds line index of block start, or -1 if not found.
+            :return:
+            """
+            for i, line in enumerate(lines_):
+                if line.startswith(block_start):
+                    return i
+            return -1
+
+        copyright_str = fmt.format(year=self.modification_year)
+        with self.path.open('r+') as f:
+            lines = f.readlines()
+            opening_lines = lines[:5]
+            if self.type.block_pat:
+                # Check if there is an existing header to expand.
+                block_i = find_block_start(lines)
+                if block_i != -1:
+                    # Expand existing block
+                    original = opening_lines[block_i]
+                    split_i = len(self.type.block_opening)
+                    new = (
+                            original[:split_i] +
+                            f'\n{self.type.block_prefix}{copyright_str}\n' +
+                            f'{self.type.block_prefix}\n' +
+                            original[split_i:]
+                    )
+                    lines[block_i] = new
+                else:
+                    # Create new block
+                    if lines[0].startswith('#!'):
+                        insert_i = 1
+                    else:
+                        insert_i = 0
+                    new_line = (
+                        f'{self.type.block_opening}\n' +
+                        f'{self.type.block_prefix}{copyright_str}\n' +
+                        f'{self.type.block_closing}\n'
+                    )
+                    lines[insert_i] = new_line
+            else:
+                # Add copyright header in comment
+                if lines[0].startswith('#!'):
+                    insert_i = 1
+                else:
+                    insert_i = 0
+                new_line = (
+                    f'{self.type.comment}\n' +
+                    f'{self.type.comment} {copyright_str}\n' +
+                    f'{self.type.comment}\n'
+                )
+                lines[insert_i] = new_line
+
+            # Write modified lines to file.
+            f.seek(0)
+            f.writelines(lines)
 
     @property
     def copyright_str(self) -> str:
