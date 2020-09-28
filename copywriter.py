@@ -234,7 +234,7 @@ class TxtFile:
             opening_lines = lines[:5]
             if self.type.block_pat:
                 # Check if there is an existing header to expand.
-                block_i = find_block_start(lines)
+                block_i = find_block_start(opening_lines)
                 if block_i != -1:
                     # Expand existing block
                     original = opening_lines[block_i]
