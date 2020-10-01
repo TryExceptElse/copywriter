@@ -95,24 +95,22 @@ def test_outdated_headers_are_found():
     assert found == expected
 
 
-def test_year_range_update():
+def test_year_range_update(tmp_path):
     """ Tests that a copyright header's years are updated correctly """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        shutil.copytree(src=ROOT, dst=Path(tmp_dir, 'sample'))
-        bar = Path(tmp_dir, 'sample/test/resources/sample/src/bar.c')
-        copywriter.TxtFile(bar).update()
-        with bar.open() as f:
-            assert f.read() == '// Copyright 2018-2020 Bob\n'
+    shutil.copytree(src=ROOT, dst=Path(tmp_path, 'sample'))
+    bar = Path(tmp_path, 'sample/test/resources/sample/src/bar.c')
+    copywriter.TxtFile(bar).update()
+    with bar.open() as f:
+        assert f.read() == '// Copyright 2018-2020 Bob\n'
 
 
-def test_single_year_update():
+def test_single_year_update(tmp_path):
     """ Tests that a copyright header's years are updated correctly """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        shutil.copytree(src=ROOT, dst=Path(tmp_dir, 'sample'))
-        baz = Path(tmp_dir, 'sample/test/resources/sample/scripts/baz.py')
-        copywriter.TxtFile(baz).update()
-        with baz.open() as f:
-            assert 'Copyright 2019-2020 Bob' in f.read()
+    shutil.copytree(src=ROOT, dst=Path(tmp_path, 'sample'))
+    baz = Path(tmp_path, 'sample/test/resources/sample/scripts/baz.py')
+    copywriter.TxtFile(baz).update()
+    with baz.open() as f:
+        assert 'Copyright 2019-2020 Bob' in f.read()
 
 
 def test_format_detection():
