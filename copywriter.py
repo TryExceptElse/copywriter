@@ -106,23 +106,25 @@ class Copywriter:
                 f'    Auto detected header: {self.auto_header}'
             )
 
-    def update(self, *root: ty.Iterable[Path]) -> None:
+    def update(self) -> None:
         """
         Updates existing copyright headers.
 
-        :param root: Root paths
         :return: List[Path] of modified files.
         """
+        for path in self.outdated:
+            TxtFile(path, self.copyright_re).update()
 
-    def add_missing(self, *root: ty.Iterable[Path], header: str = '') -> None:
+    def add_missing(self, header: str = '') -> None:
         """
         Adds copyright headers where missing.
 
-        :param root: Root paths
         :param header: Copyright header format. Defaults to auto_header.
         :return: List[Path] of modified files.
         """
         header = header or self.auto_header
+        for path in self.missing:
+            TxtFile(path, self.copyright_re).add(header)
 
     # Accessors
 
