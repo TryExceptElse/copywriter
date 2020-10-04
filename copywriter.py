@@ -338,16 +338,21 @@ class TxtFile:
         last modified.
         :return: int
         """
-        date_str = sub.check_output(
-            args=(
-                'git', 'log', '-1', '--format="%ad"', '--date=format:"%Y"',
-                '--', f'{self.path.name}'
-            ),
-            cwd=self.path.parent,
-            encoding='utf-8',
-        ).strip('\'"\n')
-        year = int(date_str)
-        return year
+        try:
+            date_str = sub.check_output(
+                args=(
+                    'git', 'log', '-1', '--format="%ad"', '--date=format:"%Y"',
+                    '--', f'{self.path.name}'
+                ),
+                cwd=self.path.parent,
+                encoding='utf-8',
+            ).strip('\'"\n')
+            year = int(date_str)
+            return year
+        except Exception as ex:
+            raise ValueError(
+                f'Failed to get modification year for {self.path.name}'
+            ) from ex
 
     @property
     def header_is_outdated(self) -> bool:
