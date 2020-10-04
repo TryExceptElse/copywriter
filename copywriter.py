@@ -73,7 +73,14 @@ class Copywriter:
                     glob.glob(f'{root_}/**/{f_pat}', recursive=True)
                 }
 
-        return paths
+        def is_git_tracked(path: Path) -> bool:
+            return sub.run(
+                args=('git', 'ls-files', '--error-unmatch', path),
+                stderr=sub.DEVNULL,
+                stdout=sub.DEVNULL,
+            ).returncode == 0
+
+        return {path for path in paths if is_git_tracked(path)}
 
     def show(self) -> None:
         """
