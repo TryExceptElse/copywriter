@@ -321,6 +321,8 @@ class TxtFile:
         Gets year range from copyright string.
         :return: Year range. range stop will be one greater than last
                     year in header, to allow easy inclusion testing.
+                    Return value will be `None` if copyright string has
+                    no year.
         :raise ValueError if copyright string is missing or unable to
                     be parsed.
         """
@@ -365,7 +367,7 @@ class TxtFile:
     def header_is_outdated(self) -> bool:
         """
         Checks if the copyright string is outdated.
-        :return: True if outdated.
+        :return: True if outdated, False otherwise.
         :raises: ValueError if header was not understood.
         """
         try:
@@ -373,6 +375,8 @@ class TxtFile:
         except ValueError:
             # Copyright headers without a year are not
             # considered outdated.
+            return False
+        if year_range is None:
             return False
         return self.modification_year >= year_range.stop
 
