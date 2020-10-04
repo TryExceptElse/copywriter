@@ -207,6 +207,38 @@ class TxtFile:
         Adds a copyright header where one was previously missing.
         :return: None
         """
+        notice = fmt.format(year=self.modification_year)
+        with self.path.open('r+') as f:
+            lines = f.readlines()
+            if self.type.block_start:
+                self._add_block_notice(lines, notice)
+            else:
+                self._add_comment_notice(lines, notice)
+
+            # Write modified lines to file.
+            f.seek(0)
+            f.writelines(lines)
+
+    def _add_comment_notice(self, lines: ty.List[str], notice: str) -> None:
+        """
+        Adds a copyright notice using commented lines (Ex: '// ...').
+        """
+        # Add copyright header in comment
+        if lines[0].startswith('#!'):
+            insert_i = 1
+        else:
+            insert_i = 0
+        new_text = (
+                f'{self.type.comment}\n' +
+                f'{self.type.comment} {notice}\n' +
+                f'{self.type.comment}\n'
+        )
+        lines.insert(insert_i, new_text)
+
+    def _add_block_notice(self, lines: ty.List[str], notice: str) -> None:
+        """
+        Adds a copyright notice using comment block ('/** ... */')
+        """
         if self.type.block_start:
             block_start = self.type.block_start
         else:
@@ -222,58 +254,39 @@ class TxtFile:
                     return i
             return -1
 
-        copyright_str = fmt.format(year=self.modification_year)
-        with self.path.open('r+') as f:
-            lines = f.readlines()
-            opening_lines = lines[:3]
-            if self.type.block_start:
-                # Check if there is an existing header to expand.
-                block_i = find_block_start(opening_lines)
-                if block_i != -1:
-                    # Expand existing block
-                    original = opening_lines[block_i]
-                    split_i = original.find(block_start) + len(block_start)
+        opening_lines = lines[:3]
 
-                    # Leave characters attached to the block start
-                    # in place.
-                    while original[split_i] not in string.whitespace:
-                        split_i += 1
+        # Check if there is an existing header to expand.
+        block_i = find_block_start(opening_lines)
+        if block_i != -1:
+            # Expand existing block
+            original = opening_lines[block_i]
+            split_i = original.find(block_start) + len(block_start)
 
-                    new = (
-                            original[:split_i].rstrip() +
-                            f'\n{self.type.block_prefix}{copyright_str}\n' +
-                            f'{self.type.block_prefix}' +
-                            original[split_i:]
-                    )
-                    lines[block_i] = new
-                else:
-                    # Create new block
-                    if lines[0].startswith('#!'):
-                        insert_i = 1
-                    else:
-                        insert_i = 0
-                    new_text = (
-                        f'{self.type.block_start}\n' +
-                        f'{self.type.block_prefix}{copyright_str}\n' +
-                        f'{self.type.block_end}\n'
-                    )
-                    lines.insert(insert_i, new_text)
+            # Leave characters attached to the block start
+            # in place.
+            while original[split_i] not in string.whitespace:
+                split_i += 1
+
+            new = (
+                    original[:split_i].rstrip() +
+                    f'\n{self.type.block_prefix}{notice}\n' +
+                    f'{self.type.block_prefix}' +
+                    original[split_i:]
+            )
+            lines[block_i] = new
+        else:
+            # Create new block
+            if lines[0].startswith('#!'):
+                insert_i = 1
             else:
-                # Add copyright header in comment
-                if lines[0].startswith('#!'):
-                    insert_i = 1
-                else:
-                    insert_i = 0
-                new_text = (
-                    f'{self.type.comment}\n' +
-                    f'{self.type.comment} {copyright_str}\n' +
-                    f'{self.type.comment}\n'
-                )
-                lines.insert(insert_i, new_text)
-
-            # Write modified lines to file.
-            f.seek(0)
-            f.writelines(lines)
+                insert_i = 0
+            new_text = (
+                    f'{self.type.block_start}\n' +
+                    f'{self.type.block_prefix}{notice}\n' +
+                    f'{self.type.block_end}\n'
+            )
+            lines.insert(insert_i, new_text)
 
     @property
     def copyright_str(self) -> str:
