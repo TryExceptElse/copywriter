@@ -99,19 +99,23 @@ class Copywriter:
                 f'    Auto detected header: {self.auto_header}'
             )
 
-    def update(*root: ty.Iterable[Path]) -> None:
+    def update(self, *root: ty.Iterable[Path]) -> None:
         """
         Updates existing copyright headers.
+
         :param root: Root paths
         :return: List[Path] of modified files.
         """
 
-    def add_missing(*root: ty.Iterable[Path]) -> None:
+    def add_missing(self, *root: ty.Iterable[Path], header: str = '') -> None:
         """
         Adds copyright headers where missing.
+
         :param root: Root paths
+        :param header: Copyright header format. Defaults to auto_header.
         :return: List[Path] of modified files.
         """
+        header = header or self.auto_header
 
     # Accessors
 
@@ -246,21 +250,29 @@ class TxtFile:
 
         def find_block_start(lines_: ty.Sequence[str]) -> int:
             """
-            Finds line index of block start, or -1 if not found.
-            :return:
+            Finds line index of block start, raises ValueError if
+            not found.
+            :return: int index of block start line.
             """
             for i, line in enumerate(lines_):
                 if line.startswith(block_start):
                     return i
-            return -1
+            raise ValueError('No block start found in passed lines.')
 
-        opening_lines = lines[:3]
+        def create_new_block():
+            if lines[0].startswith('#!'):
+                insert_i = 1
+            else:
+                insert_i = 0
+            new_text = (
+                    f'{self.type.block_start}\n' +
+                    f'{self.type.block_prefix}{notice}\n' +
+                    f'{self.type.block_end}\n'
+            )
+            lines.insert(insert_i, new_text)
 
-        # Check if there is an existing header to expand.
-        block_i = find_block_start(opening_lines)
-        if block_i != -1:
-            # Expand existing block
-            original = opening_lines[block_i]
+        def expand_existing_block(block_i_):
+            original = opening_lines[block_i_]
             split_i = original.find(block_start) + len(block_start)
 
             # Leave characters attached to the block start
@@ -274,19 +286,17 @@ class TxtFile:
                     f'{self.type.block_prefix}' +
                     original[split_i:]
             )
-            lines[block_i] = new
+            lines[block_i_] = new
+
+        opening_lines = lines[:3]
+
+        # Check if there is an existing header to expand.
+        try:
+            block_i = find_block_start(opening_lines)
+        except ValueError:
+            create_new_block()
         else:
-            # Create new block
-            if lines[0].startswith('#!'):
-                insert_i = 1
-            else:
-                insert_i = 0
-            new_text = (
-                    f'{self.type.block_start}\n' +
-                    f'{self.type.block_prefix}{notice}\n' +
-                    f'{self.type.block_end}\n'
-            )
-            lines.insert(insert_i, new_text)
+            expand_existing_block(block_i)
 
     @property
     def copyright_str(self) -> str:
