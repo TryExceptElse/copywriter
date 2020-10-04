@@ -4,4 +4,5 @@ from setuptools import setup
 setup(
     name='copywriter',
     tests_require=['pytest'],
+    python_requires='>=3.6',
 )
