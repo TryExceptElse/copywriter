@@ -159,7 +159,7 @@ class Copywriter:
         :return: owner str.
         """
         formats = [TxtFile(path).format for path in self.files]
-        filtered = filter(lambda fmt: fmt is not None, formats)
+        filtered = filter(None, formats)
         return collections.Counter(filtered).most_common(n=1)[0][0]
 
 
