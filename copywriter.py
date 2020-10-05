@@ -24,6 +24,14 @@ PathLike = ty.Union[str, os.PathLike, Path]
 
 
 class Copywriter:
+    """
+    Class handling copywriter operation.
+
+    Takes parameters which define how copyright notices are found and
+    formatted, and provides functions for updating existing copyright
+    notices where they have become out of date, or adding new notices
+    where they are missing.
+    """
     def __init__(
             self,
             *root: PathLike,
@@ -433,6 +441,9 @@ def recognize(path: Path) -> FileType:
 
 
 def fmt_file_list(paths: ty.Iterable[Path]) -> str:
+    """
+    Produces reader-friendly list representation from elements.
+    """
     return '[\n    ' + '\n    '.join(str(path) for path in paths) + '\n]'
 
 
