@@ -360,6 +360,24 @@ def test_py_with_shebang_addition(tmp_path: Path):
     assert content == expected
 
 
+def test_show_succeeds(tmp_path):
+    test_source_path = Path(tmp_path, 'test_sources')
+    shutil.copytree(src=ROOT, dst=test_source_path)
+    writer = copywriter.Copywriter(test_source_path)
+
+
+def test_update_succeeds(tmp_path):
+    test_source_path = Path(tmp_path, 'test_sources')
+    shutil.copytree(src=ROOT, dst=test_source_path)
+    copywriter.Copywriter(test_source_path).update()
+
+
+def test_add_succeeds(tmp_path):
+    test_source_path = Path(tmp_path, 'test_sources')
+    shutil.copytree(src=ROOT, dst=test_source_path)
+    copywriter.Copywriter(test_source_path).add_missing()
+
+
 # Test util.
 
 
