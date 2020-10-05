@@ -417,7 +417,7 @@ class TxtFile:
         try:
             return re.sub(
                 pattern=YEAR_PATTERN,
-                repl='{years}',
+                repl='{year}',
                 string=self.copyright_str,
                 count=1
             )

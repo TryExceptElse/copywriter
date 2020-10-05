@@ -115,7 +115,7 @@ def test_single_year_update(tmp_path):
 
 def test_format_detection():
     fmt = copywriter.TxtFile(Path(SAMPLE, 'scripts/baz.py')).format
-    assert 'Copyright {years} Bob' == fmt
+    assert 'Copyright {year} Bob' == fmt
 
 
 def test_auto_header():
@@ -124,7 +124,7 @@ def test_auto_header():
         'build.sh', 'CMakeLists.txt', 'readme.md'
     )]
     auto_header = copywriter.Copywriter(*roots).auto_header
-    assert auto_header == 'Copyright {years} Bob'
+    assert auto_header == 'Copyright {year} Bob'
 
 
 def test_c_header_expansion(tmp_path: Path):
