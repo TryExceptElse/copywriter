@@ -12,6 +12,7 @@ import itertools
 import re
 import string
 import subprocess as sub
+import sys
 import typing as ty
 
 
@@ -474,6 +475,12 @@ def main():
         copyright_re=args.copyright_re,
         filter_re=args.filter_re,
     )
+    if not copywriter.files:
+        print(
+            'No files tracked by git were found using passed parameters.',
+            file=sys.stderr
+        )
+        exit(-1)
 
     if args.show or not (args.update or args.add_missing):
         copywriter.show()
