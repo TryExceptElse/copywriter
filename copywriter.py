@@ -87,7 +87,7 @@ class Copywriter:
 
         def is_git_tracked(path: Path) -> bool:
             return sub.run(
-                args=('git', 'ls-files', '--error-unmatch', path),
+                args=('git', 'ls-files', '--error-unmatch', path.absolute()),
                 stderr=sub.DEVNULL,
                 stdout=sub.DEVNULL,
                 cwd=path.parent
