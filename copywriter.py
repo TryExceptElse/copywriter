@@ -443,15 +443,15 @@ def main():
         help='root dir to search, or specific file.'
     )
     parser.add_argument(
-        '--show', action='store_true',
+        '--show', '-S', action='store_true',
         help='Display files that need changes.'
     )
     parser.add_argument(
-        '--update', action='store_true',
+        '--update', '-U', action='store_true',
         help='Update copyright notice years.'
     )
     parser.add_argument(
-        '--add-missing', action='store_true',
+        '--add-missing', '-A', action='store_true',
         help='Add copyright notice where missing.'
     )
     parser.add_argument(
