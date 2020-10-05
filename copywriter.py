@@ -27,7 +27,8 @@ class Copywriter:
             self,
             *root: PathLike,
             copyright_re: str = COPYRIGHT_REGEX,
-            update_re: str = '',
+            filter_re: str = '',
+            fmt: str = '',
     ) -> None:
         """
         Create new copywriter instance.
@@ -41,11 +42,13 @@ class Copywriter:
         """
         self.roots = [Path(path) for path in root]
         self.copyright_re = copyright_re
-        self.update_re = update_re
+        self.filter_re = filter_re
 
         self.files = self._find_files(*self.roots)
         self._outdated: ty.Optional[ty.Set[Path]] = None
         self._missing: ty.Optional[ty.Set[Path]] = None
+        self._passed_fmt = fmt
+        self._auto_format = ''
 
     @staticmethod
     def _find_files(*root: PathLike) -> ty.Set[Path]:
@@ -103,8 +106,11 @@ class Copywriter:
                 f'{len(missing)} files are missing headers.\n'
                 '    Pass --add-missing to add copyright headers to '
                 'these files.'
-                f'    Auto detected header: {self.auto_header}'
             )
+            if self._passed_fmt:
+                print(f'    Passed header: {self._passed_fmt}')
+            else:
+                print(f'    Auto detected header: {self.auto_header}')
 
     def update(self) -> None:
         """
@@ -155,14 +161,24 @@ class Copywriter:
         return self._missing
 
     @property
+    def format(self) -> str:
+        """
+        Gets format which will be used for added copyright notices.
+        """
+        return self._passed_fmt or self.auto_header
+
+    @property
     def auto_header(self) -> str:
         """
         Determines the auto-generated header to be added.
         :return: owner str.
         """
-        formats = [TxtFile(path).format for path in self.files]
-        filtered = filter(None, formats)
-        return collections.Counter(filtered).most_common(n=1)[0][0]
+        if not self._auto_format:
+            formats = [TxtFile(path).format for path in self.files]
+            filtered = filter(None, formats)
+            counter = collections.Counter(filtered)
+            self._auto_format = counter.most_common(n=1)[0][0]
+        return self._auto_format
 
 
 class FileType(ty.NamedTuple):
@@ -439,19 +455,24 @@ def main():
         help='Add copyright notice where missing.'
     )
     parser.add_argument(
+        '--format', '--fmt', '-f',
+        help='Format used for copyright notice.'
+    )
+    parser.add_argument(
         '--copyright-re', default=COPYRIGHT_REGEX,
         help='Copyright header str.'
     )
     parser.add_argument(
-        '--only-update', nargs='+', default='',
-        help='Pattern to limit header updates to.'
+        '--filter-re', nargs='+', default='',
+        help='Pattern to limit header changes to.'
     )
     args = parser.parse_args()
 
     copywriter = Copywriter(
         *args.path,
+        fmt=args.format,
         copyright_re=args.copyright_re,
-        update_re=args.only_update,
+        filter_re=args.filter_re,
     )
 
     if args.show or not (args.update or args.add_missing):
