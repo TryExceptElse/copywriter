@@ -263,7 +263,7 @@ class TxtFile:
         Adds a copyright notice using commented lines (Ex: '// ...').
         """
         # Add copyright header in comment
-        if lines[0].startswith('#!'):
+        if lines and lines[0].startswith('#!'):
             insert_i = 1
         else:
             insert_i = 0
@@ -295,7 +295,7 @@ class TxtFile:
             raise ValueError('No block start found in passed lines.')
 
         def create_new_block():
-            if lines[0].startswith('#!'):
+            if lines and lines[0].startswith('#!'):
                 insert_i = 1
             else:
                 insert_i = 0
