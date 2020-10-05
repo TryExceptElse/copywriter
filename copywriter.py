@@ -90,6 +90,7 @@ class Copywriter:
                 args=('git', 'ls-files', '--error-unmatch', path),
                 stderr=sub.DEVNULL,
                 stdout=sub.DEVNULL,
+                cwd=path.parent
             ).returncode == 0
 
         return {path for path in paths if is_git_tracked(path)}
