@@ -431,7 +431,7 @@ class TxtFile:
 
 def recognize(path: Path) -> FileType:
     """
-    Attempts to recognize a file's file type.
+    Attempts to recognize a file's type.
     :param path: Path to file to recognize.
     :return: FileType or None.
     """
