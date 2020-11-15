@@ -492,7 +492,7 @@ def main():
             'No files tracked by git were found using passed parameters.',
             file=sys.stderr
         )
-        exit(-1)
+        return -1
 
     if args.show or not (args.update or args.add_missing):
         copywriter.show()
@@ -500,6 +500,8 @@ def main():
         copywriter.update()
     if args.add_missing:
         copywriter.add_missing()
+
+    return 0
 
 
 file_types = {f_type.name: f_type for f_type in (
@@ -533,4 +535,4 @@ file_types = {f_type.name: f_type for f_type in (
 
 
 if __name__ == '__main__':
-    main()
+    exit(main())
